@@ -2,6 +2,7 @@ import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 import api from "./api";
+import CostumeSlimCard from "./components/CostumeSlimCard";
 
 
 export default function AdminPage (){
@@ -13,9 +14,11 @@ export default function AdminPage (){
     const [newCostumeName, setNewCostumeName] = useState('');
     const [votingStatus, setVotingStatus] = useState('')
     const [newCostumePhoto, setNewCostumePhoto] = useState(null);
+    const [costumes, setCostumes] = useState([]);
 
     useEffect(() => {
             fetchStatus();
+            fetchCostumes();
         }, []);
 
     const fetchStatus = async () => {
@@ -43,6 +46,15 @@ export default function AdminPage (){
     }
   };
 
+  const fetchCostumes = async () => {
+    try {
+      const res = await api.get('/costumes');
+      setCostumes(res.data.costumes);
+    }catch (err){
+      console.error('errore nel recupero dei costumi')
+    }
+  }
+
   // Aggiungi Costume (Admin)
   const handleAddCostume = async (e) => {
     e.preventDefault();
@@ -59,6 +71,7 @@ export default function AdminPage (){
       setNewCostumeName('');
       setNewCostumePhoto(null);
       alert("Costume aggiunto con successo!");
+      fetchCostumes();
     } catch (err) {
       alert("Errore nel caricamento del costume");
     }
@@ -86,60 +99,83 @@ export default function AdminPage (){
       alert("Errore nella modifica dello stato delle votazioni");
     }
   };
-    
-  return (
-    <div className="admin-card">
-        {!isAdmin ? (
-        <form onSubmit={handleLogin}>
-            <h3>Accesso Admin</h3>
-            <input
-            className="input-field"
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            />
-            <input
-            className="input-field"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            />
-            <button className="btn-submit" type="submit">Accedi</button>
-        </form>
-        ) : (
-        <div>
-            <h3>Pannello di Controllo Admin</h3>
-            <button
-            className="btn-submit"
-            style={{ backgroundColor: votingStatus == 'APERTA' ? '#d9534f' : '#5cb85c', marginBottom: '15px' }}
-            onClick={votingStatus == 'APERTA' ? handleCloseVoting : handleOpenVoting}
-            >
-            {votingStatus == 'APERTA' ? 'Interrompi Votazioni' : 'Avvia Votazioni'}
-            </button>
 
-            <h4>Aggiungi Nuovo Costume</h4>
-            <form onSubmit={handleAddCostume}>
-            <input
+  const handleDeleteCostume = async (id) => {
+    console.log(id);
+  };
+      
+    return (
+
+      <div className="admin-page">
+        <div className="admin-card">
+            {!isAdmin ? (
+            <form onSubmit={handleLogin}>
+                <h3>Accesso Admin</h3>
+                <input
                 className="input-field"
                 type="text"
-                placeholder="Nome Costume / Partecipante"
-                value={newCostumeName}
-                onChange={e => setNewCostumeName(e.target.value)}
-            />
-            <input
+                placeholder="Username"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                />
+                <input
                 className="input-field"
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={e => setNewCostumePhoto(e.target.files[0])}
-            />
-            <button className="btn-submit" type="submit" onClick={ handleAddCostume}> Carica Costume</button>
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                />
+                <button className="btn-submit" type="submit">Accedi</button>
             </form>
+            ) : (
+            <div>
+                <h3>Pannello di Controllo Admin</h3>
+                <button
+                className="btn-submit"
+                style={{ backgroundColor: votingStatus == 'APERTA' ? '#d9534f' : '#5cb85c', marginBottom: '15px' }}
+                onClick={votingStatus == 'APERTA' ? handleCloseVoting : handleOpenVoting}
+                >
+                {votingStatus == 'APERTA' ? 'Interrompi Votazioni' : 'Avvia Votazioni'}
+                </button>
+
+                <h4>Aggiungi Nuovo Costume</h4>
+                <form onSubmit={handleAddCostume}>
+                <input
+                    className="input-field"
+                    type="text"
+                    placeholder="Nome Costume / Partecipante"
+                    value={newCostumeName}
+                    onChange={e => setNewCostumeName(e.target.value)}
+                />
+                <input
+                    className="input-field"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={e => setNewCostumePhoto(e.target.files[0])}
+                />
+                <button className="btn-submit" type="submit" onClick={ handleAddCostume}> Carica Costume</button>
+                </form>
+            </div>
+            )}
         </div>
-        )}
-    </div>
+        <div className = 'admin-costume-list'>
+          <h4>Costumi caricati</h4>
+          <div className="costumes-list-conteiner">{costumes.length === 0 && (
+            <p>Nessun costume caricato.</p>
+            )}
+            {costumes.map(costume => (
+            <CostumeSlimCard
+              key={costume.id}
+              costume={costume}
+              onDelete={handleDeleteCostume}
+            />
+          ))} </div>
+            
+
+        </div>
+      </div>
+
   );
       
 }

@@ -28,6 +28,7 @@ body {
   align-items: flex-start;
   min-height: 100vh;
   overflow-x: hidden;
+  margin: 0;
 }
 
 #root {
@@ -258,6 +259,7 @@ body {
   padding: 20px;
   margin-bottom: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
 .input-field {
@@ -281,4 +283,49 @@ body {
   font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
+}
+
+.costume-slim-card-foto {
+    max-height: 100px;
+    max-width: 100px;
+    border-radius: 10px;
+
+}
+
+.costume-slim-card{
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #ff8e1d;
+  border-radius: 20px;
+}
+
+
+
+
+
+.admin-page {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+
+
+.admin-costume-list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.costumes-list-conteiner {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px;
 }
