@@ -128,6 +128,7 @@ export default function AdminPage (){
                 <button className="btn-submit" type="submit">Accedi</button>
             </form>
             ) : (
+              <div>
             <div>
                 <h3>Pannello di Controllo Admin</h3>
                 <button
@@ -156,21 +157,24 @@ export default function AdminPage (){
                 />
                 <button className="btn-submit" type="submit" onClick={ handleAddCostume}> Carica Costume</button>
                 </form>
+            
             </div>
+            <div className = 'admin-costume-list'>
+              <h4>Costumi caricati</h4>
+              <div className="costumes-list-conteiner">{costumes.length === 0 && (
+                <p>Nessun costume caricato.</p>
+                )}
+                {costumes.map(costume => (
+                <CostumeSlimCard
+                  key={costume.id}
+                  costume={costume}
+                  onDelete={handleDeleteCostume}
+                />
+              ))} </div>
+
+          </div>
+          </div>
             )}
-        </div>
-        <div className = 'admin-costume-list'>
-          <h4>Costumi caricati</h4>
-          <div className="costumes-list-conteiner">{costumes.length === 0 && (
-            <p>Nessun costume caricato.</p>
-            )}
-            {costumes.map(costume => (
-            <CostumeSlimCard
-              key={costume.id}
-              costume={costume}
-              onDelete={handleDeleteCostume}
-            />
-          ))} </div>
             
 
         </div>

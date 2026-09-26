@@ -1,0 +1,109 @@
+.crown-button {
+    display: inline-block;
+    outline: none;
+    font-size: 16px;
+    box-sizing: border-box;
+    border-radius: 20px;
+    padding: 10px 15px;
+    text-transform: uppercase;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16),
+                0 3px 6px rgba(110, 80, 20, 0.4),
+                inset 0 -2px 5px 1px rgba(139, 66, 8, 1),
+                inset 0 -1px 1px 3px rgba(250, 227, 133, 1);
+    background-image: linear-gradient(160deg,  #a54e07, #b47e11, #fef1a2, #bc881b, #a54e07);
+    border: 1px solid #a55d07;
+    color: rgb(120, 50, 5);
+    text-shadow: 0 2px 2px rgba(250, 227, 133, 1);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background-size: 100% 100%;
+    background-position: center;
+    user-select: none;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    max-height: 120px;
+    max-width: 120px;
+    /*** full width block ***/
+    /* width: 100%; */
+}
+
+.crown-button:focus,
+.crown-button:hover {
+    background-size: 150% 150%;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19),
+                0 6px 6px rgba(0, 0, 0, 0.23),
+                inset 0 -2px 5px 1px #b17d10,
+                inset 0 -1px 1px 3px rgba(250, 227, 133, 1);
+    border: 1px solid rgba(165, 93, 7, 0.6);
+    color: rgba(120, 50, 5, 0.8);
+}
+
+.crown-button:active {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16),
+                0 3px 6px rgba(110, 80, 20, 0.4),
+                inset 0 -2px 5px 1px #b17d10,
+                inset 0 -1px 1px 3px rgba(250, 227, 133, 1);
+}
+
+.crown-button:disabled {
+    pointer-events: none;
+    opacity: .65;
+    color: #7e7e7e;
+    background: #dcdcdc;
+    box-shadow: none;
+    text-shadow: none;
+    border-color: #c2c2c2;
+}
+
+.crown-button img{
+     display: block;
+  max-width: 100%;
+  height: auto;
+  filter: drop-shadow(2px 4px 6px rgba(97, 69, 1, 0.83));
+
+  
+
+}
+
+.crown-button--silver{
+    box-shadow:
+  0 3px 6px rgba(0, 0, 0, 0.16),
+  0 3px 6px rgba(90, 100, 110, 0.4),
+  inset 0 -2px 5px 1px rgba(70, 80, 90, 0.8),
+  inset 0 -1px 1px 3px rgba(255, 255, 255, 0.95);
+background-image: linear-gradient(
+  160deg,
+  #6f7780,
+  #aeb5bd,
+  #f5f7fa,
+  #b9c0c8,
+  #737b84
+);
+border: 1px solid #858d96;
+color: #4a5159;
+text-shadow: 0 2px 2px rgba(255, 255, 255, 0.9);
+max-height: 100px;
+    max-width: 100px;
+
+}
+
+.crown-button--bronze {
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.16),
+    0 3px 6px rgba(100, 55, 30, 0.4),
+    inset 0 -2px 5px 1px rgba(100, 45, 20, 0.85),
+    inset 0 -1px 1px 3px rgba(255, 220, 180, 0.9);
+  background-image: linear-gradient(
+    160deg,
+    #713b22,
+    #a85f35,
+    #e6b187,
+    #b76d40,
+    #713b22
+  );
+  border: 1px solid #8d4d2e;
+  color: #5c2e1a;
+  text-shadow: 0 2px 2px rgba(255, 220, 180, 0.85);
+  max-height: 100px;
+    max-width: 100px;
+}

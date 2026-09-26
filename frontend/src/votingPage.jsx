@@ -4,6 +4,14 @@ import { useState } from "react";
 import { useEffect } from "react";
 import api from "./api";
 import { ChevronLeft, ChevronRight, Check, Trophy } from 'lucide-react';
+import {Swiper, SwiperSlide} from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/effect-coverflow';
+import 'swiper/css/pagination';
+import { EffectCoverflow, Pagination } from 'swiper/modules';
+import CostumeCard from "./components/CostumeCard";
+import CrownButton from "./components/CrownButton";
+import './votingPage.css'
 
 export default function VotingPage (){
     const [costumes, setCostumes] = useState([]);
@@ -107,15 +115,8 @@ export default function VotingPage (){
         <div className="app-container">
         {/* Header Mobile */}
         <header className="app-header">
-            <h1 className="app-title">🎃 Costume Contest</h1>
-            <div style={{ display: 'flex', gap: '8px' }}>
-            
-            {votingStatus == 'APERTO' && !hasVoted && (
-                <button className="btn-icon confirm" onClick={handleSubmitVote} title="Conferma Voto">
-                <Check size={20} />
-                </button>
-            )}
-            </div>
+            <h1 className="app-title">🎃 Costume più bellino</h1>
+        
         </header>
 
         <main className="main-content">
@@ -155,6 +156,7 @@ export default function VotingPage (){
                 </div>
             </div>
             )}
+          
 
             {/* SCHERMATA CAROSELLO VOTAZIONI (SE VOTAZIONI ATTIVE) */}
             {votingStatus == 'APERTA' && costumes.length > 0 && (
@@ -169,65 +171,40 @@ export default function VotingPage (){
                 </div>
                 ) : (
                 <>
-                    <div className="carousel-card">
-                    <img
-                        className="costume-img"
-                        src={currentCostume.image_url}
-                        alt={currentCostume.name}
-                    />
-                    <div className="costume-info">
-                        <div className="costume-name">{currentCostume.name}</div>
+                    <Swiper
+                        effect={'coverflow'}
+                        grabCursor={true}
+                        centeredSlides={true}
+                        slidesPerView={'auto'}
+                        coverflowEffect={{
+                        rotate: 50,
+                        stretch: 0,
+                        depth: 100,
+                        modifier: 1,
+                        }}
                         
-                        {/* Pulsanti Assegnazione 3 Corone */}
-                        <div className="crown-selector">
-                        <button
-                            className={`crown-btn gold ${crowns.gold === currentCostume.id ? 'active' : ''}`}
-                            onClick={() => handleAssignCrown(currentCostume.id, 'gold')}
-                            title="Corona d'Oro (1° posto)"
-                        >
-                            🥇
-                        </button>
-                        <button
-                            className={`crown-btn silver ${crowns.silver === currentCostume.id ? 'active' : ''}`}
-                            onClick={() => handleAssignCrown(currentCostume.id, 'silver')}
-                            title="Corona d'Argento (2° posto)"
-                        >
-                            🥈
-                        </button>
-                        <button
-                            className={`crown-btn bronze ${crowns.bronze === currentCostume.id ? 'active' : ''}`}
-                            onClick={() => handleAssignCrown(currentCostume.id, 'bronze')}
-                            title="Corona di Bronzo (3° posto)"
-                        >
-                            🥉
-                        </button>
-                        </div>
-                    </div>
-                    </div>
+                        modules={[EffectCoverflow, Pagination]}
+                        className="mySwiper">
+                    {costumes.map(costume => (
+                        <SwiperSlide
+                        key={costume.id}>
+                             <CostumeCard
+                                      
+                                      costume={costume}
+                                      
+                                    />
 
-                    {/* Navigazione Carosello */}
-                    <div className="carousel-nav">
-                    <button
-                        className="btn-icon"
-                        onClick={() => setCurrentIndex((prev) => (prev > 0 ? prev - 1 : costumes.length - 1))}
-                    >
-                        <ChevronLeft size={20} /> Precedente
-                    </button>
+                        </SwiperSlide>
+                                   
+                                  ))}</Swiper>
+                    
+                    
 
-                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                        {currentIndex + 1} / {costumes.length}
-                    </span>
-
-                    <button
-                        className="btn-icon"
-                        onClick={() => setCurrentIndex((prev) => (prev < costumes.length - 1 ? prev + 1 : 0))}
-                    >
-                        Successivo <ChevronRight size={20} />
-                    </button>
-                    </div>
+                  
                 </>
                 )}
             </div>
+            
             )}
 
             {votingStatus == 'APERTA' && costumes.length === 0 && (
@@ -245,6 +222,21 @@ export default function VotingPage (){
                 la votazione è stata chiusa, resta in attesa di scoprire i risultati!
             </div>
             )}
+            <div className="voting-buttons">
+                <CrownButton variant='silver' />
+                <CrownButton cariant='gold'/>
+                
+                <CrownButton variant="bronze" />
+            </div>
+            <div className="pulsanti-voto">
+                <button className="confermavoto">
+                    Conferma
+                </button>
+
+            </div>
+            
+            
+            
             
         </main>
         </div>
