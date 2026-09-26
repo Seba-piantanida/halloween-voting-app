@@ -16,7 +16,7 @@ def init_db():
 
     # 1. Tabella Admin
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
+        CREATE TABLE IF NOT EXISTS utenti (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL
@@ -25,11 +25,11 @@ def init_db():
 
     # 2. Tabella Costumi
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS costumes (
+        CREATE TABLE IF NOT EXISTS costumi (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
+            nome TEXT NOT NULL,
             image_url TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
@@ -45,16 +45,27 @@ def init_db():
 
     # 4. Tabella Voti
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS votes (
+        CREATE TABLE IF NOT EXISTS voti (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            device_token TEXT UNIQUE NOT NULL,
-            ip_address TEXT NOT NULL,
-            gold_costume_id INTEGER,
-            silver_costume_id INTEGER,
-            bronze_costume_id INTEGER,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            costume_id INTEGER REFERENCES costumi(id),
+            gold_count INTEGER,
+            silver_count INTEGER,
+            bronze_count INTEGER
         )
     """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS urers_vote (
+            vote_id INTEGER PRIMARY KEY,
+            device_token TEXT UNIQUE NOT NULL,
+            gold_id INTEGER REFERENCES costumi(id),
+            siler_id INTEGER REFERENCES costumi(id),
+            bornze_id INTEGER REFERENCES costumi(id),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """
+
+    )
 
     conn.commit()
     conn.close()

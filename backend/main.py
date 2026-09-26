@@ -131,6 +131,16 @@ def stop_voting(admin: str = Depends(get_current_admin)):
     conn.close()
 
     return {"status": Status.CHIUSA.value}
+
+@app.get("/api/admin/ranking")
+def get_raking(admin: str = Depends(get_current_admin)):
+    conn = get_db()
+    curosr = conn.cursor()
+
+    cursor.execute("""SELECT  c.id, c.name, c.image_url, v.GOLD, v.SILVER, v.BRONZE, 
+                        FROM voti as v JOIN costumi as c ON v.costume_id = c.id
+                        """)
+                        
     
 
 # --- ROTTE PUBBLICHE (UTENTI) ---
@@ -141,7 +151,7 @@ def get_status():
     cursor.execute("SELECT value FROM settings WHERE key = 'status'")
     row = cursor.fetchone()
     conn.close()
-    return {"status": row["value"] if row else Status.NON_INIZIATA}
+    return {"status": row["value"] if row else Status.NON_INIZIATA.value}
 
 @app.get("/api/costumes")
 def list_costumes():
@@ -155,7 +165,7 @@ def list_costumes():
 
     return {
         "costumes": costumes,
-        "status": row["value"] if row else Status.NON_INIZIATA
+        "status": row["value"] if row else Status.NON_INIZIATA.value
     }
 
 @app.post("/api/vote")
@@ -166,7 +176,7 @@ def submit_vote(vote: VoteRequest, request: Request, response: Response):
     # Controlla se le votazioni sono attive
     cursor.execute("SELECT value FROM settings WHERE key = 'status'")
     row = cursor.fetchone()
-    if not row or row["value"] != "true":
+    if not row or row["value"] != Status.APERTA.value:
         conn.close()
         raise HTTPException(status_code=400, detail="Le votazioni sono attualmente chiuse.")
 
@@ -179,16 +189,16 @@ def submit_vote(vote: VoteRequest, request: Request, response: Response):
     client_ip = request.client.host or "unknown"
 
     # Controlla se il dispositivo o l'IP ha già votato
-    cursor.execute("SELECT id FROM votes WHERE device_token = ? OR ip_address = ?", (device_token, client_ip))
+    cursor.execute("SELECT id FROM users_vote WHERE device_token = ? OR ip_address = ?", (device_token, client_ip))
     if cursor.fetchone():
         conn.close()
         raise HTTPException(status_code=403, detail="Hai già espresso il tuo voto da questo dispositivo!")
 
     # Registra il voto
     cursor.execute("""
-        INSERT INTO votes (device_token, ip_address, gold_costume_id, silver_costume_id, bronze_costume_id)
-        VALUES (?, ?, ?, ?, ?)
-    """, (device_token, client_ip, vote.gold_costume_id, vote.silver_costume_id, vote.bronze_costume_id))
+        INSERT INTO users_vote (device_token, gold_id, silver_id, bronze_id)
+        VALUES (?, ?, ?, ?)
+    """, (device_token, vote.gold_costume_id, vote.silver_costume_id, vote.bronze_costume_id))
     
     conn.commit()
     conn.close()
