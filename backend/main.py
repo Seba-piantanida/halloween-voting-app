@@ -11,6 +11,8 @@ from enum import Enum
 from database import get_db, init_db
 from auth import hash_password, verify_password, create_access_token, get_current_admin
 
+import ranking
+
 app = FastAPI(title="Halloween Costume Voting API")
 
 # Permetti CORS per React (sviluppo locale e da rete mobile)
@@ -140,6 +142,19 @@ def get_raking(admin: str = Depends(get_current_admin)):
     cursor.execute("""SELECT  c.id, c.name, c.image_url, v.GOLD, v.SILVER, v.BRONZE, 
                         FROM voti as v JOIN costumi as c ON v.costume_id = c.id
                         """)
+    conn.commit()
+    conn.close()
+    
+    costumes = [dict(row) for row in cursor.fetchall()]
+
+    ranking = ranking.computeRanking(costumes)
+
+
+    
+
+    return {
+        "ranking": ranking
+    }
                         
     
 

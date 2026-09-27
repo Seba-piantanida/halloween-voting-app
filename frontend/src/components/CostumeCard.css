@@ -1,4 +1,5 @@
 .CostumeCard {
+  position: relative;
   background: radial-gradient(#ab6bd8,#4c0a7a);
   display: flex;
   flex-direction: column;
@@ -13,6 +14,95 @@
 
 
 
+}
+
+.CostumeCard.crown-gold {
+  --crown-glow: rgba(254, 211, 76, .8);
+  border-radius: 20px;
+  background-image: linear-gradient(160deg, #a54e07, #b47e11, #fef1a2, #bc881b, #a54e07);
+  border: 1px solid #a55d07;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(110, 80, 20, 0.4), inset 0 -2px 5px 1px rgba(139, 66, 8, 1), inset 0 -1px 1px 3px rgba(250, 227, 133, 1);
+}
+
+.CostumeCard.crown-silver {
+  --crown-glow: rgba(225, 235, 248, .85);
+  border-radius: 20px;
+  background-image: linear-gradient(160deg, #6f7780, #aeb5bd, #f5f7fa, #b9c0c8, #737b84);
+  border: 1px solid #858d96;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(90, 100, 110, 0.4), 
+  inset 0 -2px 5px 1px rgba(70, 80, 90, 0.8), 
+  inset 0 -1px 1px 3px rgba(255, 255, 255, 0.95);
+}
+
+.CostumeCard.crown-bronze {
+  --crown-glow: rgba(230, 157, 105, .8);
+  border-radius: 20px;
+  background-image: linear-gradient(160deg, #713b22, #a85f35, #e6b187, #b76d40, #713b22);
+  border: 1px solid #8d4d2e;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(100, 55, 30, 0.4), inset 0 -2px 5px 1px rgba(100, 45, 20, 0.85), inset 0 -1px 1px 3px rgba(255, 220, 180, 0.9);
+}
+
+.costume-crown {
+  position: absolute;
+  z-index: 2;
+  top: -90px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 30px;
+  object-fit: contain;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .55));
+  animation: crown-drop .75s cubic-bezier(.18, .75, .35, 1.25) both;
+}
+
+.CostumeCard.has-crown {
+  isolation: isolate;
+  animation: crown-thud .48s .48s cubic-bezier(.2, .75, .35, 1.2) both;
+}
+
+.CostumeCard.has-crown::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: crown-glow .85s .52s ease-out both;
+}
+
+@keyframes crown-drop {
+  0% { transform: translate(-50%, -180px) rotate(-16deg) scale(.75); opacity: 0; }
+  55% { transform: translate(-50%, 8px) rotate(5deg) scale(1.08); opacity: 1; }
+  75% { transform: translate(-50%, -5px) rotate(-2deg) scale(.98); }
+  100% { transform: translate(-50%, 0) rotate(0) scale(1); opacity: 1; }
+}
+
+@keyframes crown-thud {
+  0% { transform: scale(1); }
+  35% { transform: scale(.96); }
+  65% { transform: scale(1.025); }
+  100% { transform: scale(1); }
+}
+
+@keyframes crown-glow {
+  0% { box-shadow: 0 0 0 0 var(--crown-glow); opacity: .9; }
+  100% { box-shadow: 0 0 38px 18px transparent; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .costume-crown,
+  .CostumeCard.has-crown,
+  .CostumeCard.has-crown::before {
+    animation: none;
+  }
+}
+
+.CostumeCard .costume-crown {
+  width: 200px;
+  height: 158px;
+  object-fit: contain;
 }
 
 .CostumeCard img{

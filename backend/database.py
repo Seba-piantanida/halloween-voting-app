@@ -16,7 +16,7 @@ def init_db():
 
     # 1. Tabella Admin
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS utenti (
+        CREATE TABLE IF NOT EXISTS admin (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL
@@ -56,7 +56,7 @@ def init_db():
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS urers_vote (
-            vote_id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             device_token TEXT UNIQUE NOT NULL,
             gold_id INTEGER REFERENCES costumi(id),
             siler_id INTEGER REFERENCES costumi(id),

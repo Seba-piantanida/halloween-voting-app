@@ -13,11 +13,44 @@
 }
 
 .confermavoto {
-  background: #eb9925;
   border: none;
   border-radius: 8px;
   padding: 12px 20px;
   color: white;
   font-size: 40px;
   font-weight: bold;
+  background: radial-gradient(#feb950,#f8a81e);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 30px;
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.682),
+    inset 3px 3px 5px rgba(131, 88, 3, 0.287),
+    inset -3px -3px 5px rgba(92, 63, 1, 0.766);
+
+
+}
+
+.confirm-vote {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
+  flex: 0 0 44px;
+  justify-content: center;
+  border-radius: 3px;
+}
+
+.btn-icon.confirm.confirm-vote {
+  background: linear-gradient(145deg, #ffb33a 0%, #ed8612 55%, #bd5700 100%);
+  border: 1px solid #9b4700;
+  box-shadow: 0 5px 0 #873d00, 0 7px 12px rgba(0, 0, 0, .35), inset 0 2px 2px rgba(255, 245, 190, .75), inset 0 -2px 3px rgba(128, 48, 0, .4);
+}
+
+.btn-icon.confirm.confirm-vote:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #873d00, 0 3px 6px rgba(0, 0, 0, .3), inset 0 2px 2px rgba(255, 245, 190, .65);
 }
