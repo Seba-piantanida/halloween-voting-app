@@ -55,6 +55,14 @@
     border-color: #c2c2c2;
 }
 
+.crown-button.is-selected {
+    background: #9b9b9b;
+    background-image: none;
+    border-color: #777;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, .25);
+    filter: grayscale(1);
+}
+
 .crown-button img{
      display: block;
   max-width: 100%;

@@ -70,20 +70,17 @@ export default function VotingPage (){
 
     // Assegnazione o rimozione corona
     const handleAssignCrown = (costumeId, type) => {
-        if (hasVoted || !votingActive) return;
-
+        if (hasVoted || votingStatus !== 'APERTA' || !costumeId) return;
         setCrowns(prev => {
-        // Se il costume ha già questa corona, la rimuoviamo
-        if (prev[type] === costumeId) {
-            return { ...prev, [type]: null };
-        }
-        // Altrimenti rimuoviamo il costume da altre corone se presente
-        const newCrowns = { ...prev };
-        Object.keys(newCrowns).forEach(k => {
-            if (newCrowns[k] === costumeId) newCrowns[k] = null;
-        });
-        newCrowns[type] = costumeId;
-        return newCrowns;
+            if (prev[type] === costumeId) {
+                return { ...prev, [type]: null };
+            }
+            // Ogni costume può ricevere una sola corona; una corona già assegnata
+            // può essere spostata su un altro costume.
+            if (Object.entries(prev).some(([otherType, assignedId]) => otherType !== type && assignedId === costumeId)) {
+                return prev;
+            }
+            return { ...prev, [type]: costumeId };
         });
     };
 
@@ -110,13 +107,18 @@ export default function VotingPage (){
     
 
     const currentCostume = costumes[currentIndex];
+    const allCrownsAssigned = new Set(Object.values(crowns).filter(costumeId => costumeId !== null)).size === 3;
 
     return (
         <div className="app-container">
         {/* Header Mobile */}
         <header className="app-header">
             <h1 className="app-title">🎃 Costume più bellino</h1>
-        
+            {votingStatus === 'APERTA' && !hasVoted && allCrownsAssigned && (
+                <button className="btn-icon confirm confirm-vote" onClick={handleSubmitVote} aria-label="Conferma voto" title="Conferma voto">
+                    <Check size={24} strokeWidth={3} />
+                </button>
+            )}
         </header>
 
         <main className="main-content">
@@ -184,14 +186,14 @@ export default function VotingPage (){
                         }}
                         
                         modules={[EffectCoverflow, Pagination]}
+                        onSlideChange={(swiper) => setCurrentIndex(swiper.realIndex)}
                         className="mySwiper">
                     {costumes.map(costume => (
                         <SwiperSlide
                         key={costume.id}>
                              <CostumeCard
-                                      
                                       costume={costume}
-                                      
+                                      crownType={Object.keys(crowns).find(type => crowns[type] === costume.id)}
                                     />
 
                         </SwiperSlide>
@@ -223,18 +225,10 @@ export default function VotingPage (){
             </div>
             )}
             <div className="voting-buttons">
-                <CrownButton variant='silver' />
-                <CrownButton cariant='gold'/>
-                
-                <CrownButton variant="bronze" />
+                <CrownButton variant='silver' active={crowns.silver !== null} onClick={() => handleAssignCrown(currentCostume?.id, 'silver')} />
+                <CrownButton variant='gold' active={crowns.gold !== null} onClick={() => handleAssignCrown(currentCostume?.id, 'gold')} />
+                <CrownButton variant="bronze" active={crowns.bronze !== null} onClick={() => handleAssignCrown(currentCostume?.id, 'bronze')} />
             </div>
-            <div className="pulsanti-voto">
-                <button className="confermavoto">
-                    Conferma
-                </button>
-
-            </div>
-            
             
             
             

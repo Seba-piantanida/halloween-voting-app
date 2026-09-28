@@ -42,6 +42,22 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
   - **Username**: `admin`
   - **Password**: `admin123`
 
+### Contratto del database
+
+Il backend usa esclusivamente queste tabelle e colonne: `users(id, username,
+password_hash)`, `costumes(id, name, image_url, created_at)`, `settings(key,
+value)` e `votes(id, device_token, ip_address, gold_costume_id,
+silver_costume_id, bronze_costume_id, created_at)`.
+
+All'avvio il backend crea lo schema mancante, verifica il contratto e applica
+le migrazioni SQLite compatibili ai dati esistenti. Le foreign key di `votes`
+proteggono i riferimenti ai costumi. Per verificare il contratto senza avviare
+FastAPI:
+
+```bash
+python3 -m unittest discover -s backend/tests
+```
+
 ---
 
 ### 2. Avviare il Frontend React (Mobile-First)

@@ -7,6 +7,7 @@ import bronzeCrown from "../../assets/Bronze.png";
 export default function CrownButton({
   variant = "gold",
   onClick,
+  active = false,
   type = "button",
 }) {
   let crownImage;
@@ -21,7 +22,8 @@ export default function CrownButton({
 
   return (
     <button
-      className={`crown-button crown-button--${variant}`}
+      className={`crown-button crown-button--${variant}${active ? " is-selected" : ""}`}
+      aria-pressed={active}
       onClick={onClick}
       type={type}
     >

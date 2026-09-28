@@ -1,4 +1,5 @@
 import os
+import sqlite3
 import shutil
 import uuid
 from typing import Optional
@@ -8,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from enum import Enum
 
-from database import get_db, init_db
+from database import fetch_ranking, get_db, init_db
 from auth import hash_password, verify_password, create_access_token, get_current_admin
 
 app = FastAPI(title="Halloween Costume Voting API")
@@ -32,7 +33,7 @@ def startup_event():
     init_db()
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE username = 'admin'")
+    cursor.execute("SELECT 1 FROM users WHERE username = ?", ("admin",))
     if not cursor.fetchone():
         # Admin di default: admin / admin123 (Puoi cambiarla a piacere)
         cursor.execute(
@@ -103,9 +104,19 @@ def add_costume(
 def delete_costume(costume_id: int, admin: str = Depends(get_current_admin)):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM costumes WHERE id = ?", (costume_id,))
-    conn.commit()
-    conn.close()
+    try:
+        cursor.execute("DELETE FROM costumes WHERE id = ?", (costume_id,))
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Costume non trovato")
+        conn.commit()
+    except sqlite3.IntegrityError as error:
+        conn.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Impossibile eliminare un costume che ha già ricevuto voti.",
+        ) from error
+    finally:
+        conn.close()
     return {"status": "ok"}
 
 @app.post("/api/admin/start-voting")
@@ -132,14 +143,28 @@ def stop_voting(admin: str = Depends(get_current_admin)):
 
     return {"status": Status.CHIUSA.value}
 
-@app.get("/api/admin/ranking")
-def get_raking(admin: str = Depends(get_current_admin)):
-    conn = get_db()
-    curosr = conn.cursor()
 
-    cursor.execute("""SELECT  c.id, c.name, c.image_url, v.GOLD, v.SILVER, v.BRONZE, 
-                        FROM voti as v JOIN costumi as c ON v.costume_id = c.id
-                        """)
+@app.post("/api/admin/publish-results")
+def publish_results(admin: str = Depends(get_current_admin)):
+    """Make the results visible to the public voting page."""
+    conn = get_db()
+    try:
+        conn.execute(
+            "UPDATE settings SET value = ? WHERE key = 'status'", (Status.RISULTATI.value,)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return {"status": Status.RISULTATI.value}
+
+@app.get("/api/admin/ranking")
+def get_ranking(admin: str = Depends(get_current_admin)):
+    conn = get_db()
+    try:
+        ranking = fetch_ranking(conn)
+    finally:
+        conn.close()
+    return {"ranking": ranking}
                         
     
 
@@ -172,65 +197,87 @@ def list_costumes():
 def submit_vote(vote: VoteRequest, request: Request, response: Response):
     conn = get_db()
     cursor = conn.cursor()
-
-    # Controlla se le votazioni sono attive
-    cursor.execute("SELECT value FROM settings WHERE key = 'status'")
-    row = cursor.fetchone()
-    if not row or row["value"] != Status.APERTA.value:
+    selected_ids = [
+        costume_id
+        for costume_id in (
+            vote.gold_costume_id,
+            vote.silver_costume_id,
+            vote.bronze_costume_id,
+        )
+        if costume_id is not None
+    ]
+    if not selected_ids:
         conn.close()
-        raise HTTPException(status_code=400, detail="Le votazioni sono attualmente chiuse.")
-
-    # Gestione Device Token via Cookie / Header
-    device_token = request.cookies.get("device_token")
-    if not device_token:
-        device_token = uuid.uuid4().hex
-        response.set_cookie(key="device_token", value=device_token, max_age=31536000, httponly=True)
-
-    client_ip = request.client.host or "unknown"
-
-    # Controlla se il dispositivo o l'IP ha già votato
-    cursor.execute("SELECT id FROM users_vote WHERE device_token = ? OR ip_address = ?", (device_token, client_ip))
-    if cursor.fetchone():
+        raise HTTPException(status_code=422, detail="Assegna almeno una corona.")
+    if len(selected_ids) != len(set(selected_ids)):
         conn.close()
-        raise HTTPException(status_code=403, detail="Hai già espresso il tuo voto da questo dispositivo!")
+        raise HTTPException(status_code=422, detail="Un costume può ricevere una sola corona.")
 
-    # Registra il voto
-    cursor.execute("""
-        INSERT INTO users_vote (device_token, gold_id, silver_id, bronze_id)
-        VALUES (?, ?, ?, ?)
-    """, (device_token, vote.gold_costume_id, vote.silver_costume_id, vote.bronze_costume_id))
-    
-    conn.commit()
-    conn.close()
+    # Use an immediate transaction: another request cannot pass the duplicate
+    # check between this request's check and insert.
+    try:
+        cursor.execute("BEGIN IMMEDIATE")
+        cursor.execute("SELECT value FROM settings WHERE key = 'status'")
+        row = cursor.fetchone()
+        if not row or row["value"] != Status.APERTA.value:
+            raise HTTPException(status_code=400, detail="Le votazioni sono attualmente chiuse.")
+
+        placeholders = ", ".join("?" for _ in selected_ids)
+        cursor.execute(
+            f"SELECT COUNT(*) AS count FROM costumes WHERE id IN ({placeholders})",
+            selected_ids,
+        )
+        if cursor.fetchone()["count"] != len(selected_ids):
+            raise HTTPException(status_code=422, detail="Uno o più costumi non esistono.")
+
+        device_token = request.cookies.get("device_token") or uuid.uuid4().hex
+        if not request.cookies.get("device_token"):
+            response.set_cookie(
+                key="device_token", value=device_token, max_age=31536000, httponly=True
+            )
+        client_ip = request.client.host if request.client else "unknown"
+
+        cursor.execute(
+            "SELECT id FROM votes WHERE device_token = ? OR ip_address = ?",
+            (device_token, client_ip),
+        )
+        if cursor.fetchone():
+            raise HTTPException(
+                status_code=403,
+                detail="Hai già espresso il tuo voto da questo dispositivo o rete.",
+            )
+
+        cursor.execute(
+            """
+            INSERT INTO votes (
+                device_token, ip_address, gold_costume_id, silver_costume_id, bronze_costume_id
+            ) VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                device_token,
+                client_ip,
+                vote.gold_costume_id,
+                vote.silver_costume_id,
+                vote.bronze_costume_id,
+            ),
+        )
+        conn.commit()
+    except HTTPException:
+        conn.rollback()
+        raise
+    except sqlite3.IntegrityError as error:
+        conn.rollback()
+        raise HTTPException(status_code=409, detail="Voto già registrato.") from error
+    finally:
+        conn.close()
 
     return {"message": "Voto inviato con successo! Grazie per aver partecipato."}
 
 @app.get("/api/results")
 def get_results():
     conn = get_db()
-    cursor = conn.cursor()
-    
-    cursor.execute("SELECT id, name, image_url FROM costumes")
-    costumes = {c["id"]: {"id": c["id"], "name": c["name"], "image_url": c["image_url"], "score": 0, "gold": 0, "silver": 0, "bronze": 0} for c in cursor.fetchall()}
-
-    cursor.execute("SELECT gold_costume_id, silver_costume_id, bronze_costume_id FROM votes")
-    votes = cursor.fetchall()
-    conn.close()
-
-    # Assegnazione Punti: Oro = 3, Argento = 2, Bronzo = 1
-    for v in votes:
-        if v["gold_costume_id"] in costumes:
-            costumes[v["gold_costume_id"]]["score"] += 3
-            costumes[v["gold_costume_id"]]["gold"] += 1
-        if v["silver_costume_id"] in costumes:
-            costumes[v["silver_costume_id"]]["score"] += 2
-            costumes[v["silver_costume_id"]]["silver"] += 1
-        if v["bronze_costume_id"] in costumes:
-            costumes[v["bronze_costume_id"]]["score"] += 1
-            costumes[v["bronze_costume_id"]]["bronze"] += 1
-
-    # Ordina i costumi per punteggio decrescente
-    sorted_results = sorted(costumes.values(), key=lambda x: x["score"], reverse=True)
-
-    return {"results": sorted_results[:3]} # Restituisce i primi 3 per il podio
-
+    try:
+        results = fetch_ranking(conn, limit=3)
+    finally:
+        conn.close()
+    return {"results": results}

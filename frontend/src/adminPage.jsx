@@ -107,6 +107,11 @@ export default function AdminPage (){
     return (
 
       <div className="admin-page">
+        <header>
+          <h1>admin pannel</h1>
+          <button>classifica</button>
+          <button>add</button>
+        </header>
         <div className="admin-card">
             {!isAdmin ? (
             <form onSubmit={handleLogin}>
@@ -131,13 +136,7 @@ export default function AdminPage (){
               <div>
             <div>
                 <h3>Pannello di Controllo Admin</h3>
-                <button
-                className="btn-submit"
-                style={{ backgroundColor: votingStatus == 'APERTA' ? '#d9534f' : '#5cb85c', marginBottom: '15px' }}
-                onClick={votingStatus == 'APERTA' ? handleCloseVoting : handleOpenVoting}
-                >
-                {votingStatus == 'APERTA' ? 'Interrompi Votazioni' : 'Avvia Votazioni'}
-                </button>
+                
 
                 <h4>Aggiungi Nuovo Costume</h4>
                 <form onSubmit={handleAddCostume}>
@@ -159,6 +158,23 @@ export default function AdminPage (){
                 </form>
             
             </div>
+            <div>
+               <button
+                className="btn-submit"
+                style={{ backgroundColor: votingStatus == 'APERTA' ? '#d9534f' : '#5cb85c', marginBottom: '15px' }}
+                onClick={votingStatus == 'APERTA' ? handleCloseVoting : handleOpenVoting}
+                >
+                {votingStatus == 'APERTA' ? 'Interrompi Votazioni' : 'Avvia Votazioni'}
+                </button>
+                 <button
+                className="btn-submit"
+                style={{ backgroundColor: votingStatus == 'APERTA' ? '#4f61d9' : '#5cb85c', marginBottom: '15px' }}
+                onClick={votingStatus == 'APERTA' ? handleCloseVoting : handleOpenVoting}
+                >
+                mostra risultati
+                </button>
+            </div>
+           
             <div className = 'admin-costume-list'>
               <h4>Costumi caricati</h4>
               <div className="costumes-list-conteiner">{costumes.length === 0 && (
