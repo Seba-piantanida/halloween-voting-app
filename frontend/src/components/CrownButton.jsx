@@ -8,6 +8,8 @@ export default function CrownButton({
   variant = "gold",
   onClick,
   active = false,
+  assignedElsewhere = false,
+  disabled = false,
   type = "button",
 }) {
   let crownImage;
@@ -22,8 +24,10 @@ export default function CrownButton({
 
   return (
     <button
-      className={`crown-button crown-button--${variant}${active ? " is-selected" : ""}`}
+      className={`crown-button crown-button--${variant}${active ? " is-selected" : ""}${assignedElsewhere ? " is-assigned-elsewhere" : ""}`}
       aria-pressed={active}
+      aria-label={`Assegna o rimuovi la corona ${variant}`}
+      disabled={disabled}
       onClick={onClick}
       type={type}
     >

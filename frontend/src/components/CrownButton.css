@@ -63,6 +63,15 @@
     filter: grayscale(1);
 }
 
+.crown-button.is-assigned-elsewhere {
+    filter: grayscale(1);
+    opacity: 0.65;
+}
+
+.crown-button.is-assigned-elsewhere img {
+    filter: grayscale(1) drop-shadow(2px 4px 6px rgba(97, 69, 1, 0.45));
+}
+
 .crown-button img{
      display: block;
   max-width: 100%;

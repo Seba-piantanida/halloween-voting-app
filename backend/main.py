@@ -6,7 +6,7 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Form, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from enum import Enum
 
 from database import fetch_ranking, get_db, init_db
@@ -14,10 +14,18 @@ from auth import hash_password, verify_password, create_access_token, get_curren
 
 app = FastAPI(title="Halloween Costume Voting API")
 
+ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
+    ).split(",")
+    if origin.strip()
+]
+
 # Permetti CORS per React (sviluppo locale e da rete mobile)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -49,9 +57,9 @@ class LoginRequest(BaseModel):
     password: str
 
 class VoteRequest(BaseModel):
-    gold_costume_id: Optional[int] = None
-    silver_costume_id: Optional[int] = None
-    bronze_costume_id: Optional[int] = None
+    gold_costume_id: Optional[int] = Field(default=None, gt=0)
+    silver_costume_id: Optional[int] = Field(default=None, gt=0)
+    bronze_costume_id: Optional[int] = Field(default=None, gt=0)
 
 # --- STATI ---
 class Status(Enum):
@@ -59,6 +67,14 @@ class Status(Enum):
     APERTA = 'APERTA'
     CHIUSA = 'CHIUSA'
     RISULTATI = 'RISULTATI'
+
+
+def get_client_ip(request: Request) -> str:
+    """Read the browser IP forwarded by the local/reverse proxy when present."""
+    forwarded_for = request.headers.get("x-forwarded-for")
+    if forwarded_for:
+        return forwarded_for.split(",", maxsplit=1)[0].strip()
+    return request.client.host if request.client else "unknown"
 
 # --- ROTTE ADMIN ---
 @app.post("/api/admin/login")
@@ -165,6 +181,21 @@ def get_ranking(admin: str = Depends(get_current_admin)):
     finally:
         conn.close()
     return {"ranking": ranking}
+
+@app.delete("/api/admin/votes")
+def delete_all_votes(admin: str = Depends(get_current_admin)):
+    """Remove every recorded vote; costume records remain untouched."""
+    conn = get_db()
+    try:
+        cursor = conn.execute("DELETE FROM votes")
+        deleted_count = cursor.rowcount
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+    return {"status": "ok", "deleted_count": deleted_count}
                         
     
 
@@ -194,7 +225,7 @@ def list_costumes():
     }
 
 @app.post("/api/vote")
-def submit_vote(vote: VoteRequest, request: Request, response: Response):
+def submit_vote(vote: VoteRequest, request: Request):
     conn = get_db()
     cursor = conn.cursor()
     selected_ids = [
@@ -230,22 +261,8 @@ def submit_vote(vote: VoteRequest, request: Request, response: Response):
         if cursor.fetchone()["count"] != len(selected_ids):
             raise HTTPException(status_code=422, detail="Uno o più costumi non esistono.")
 
-        device_token = request.cookies.get("device_token") or uuid.uuid4().hex
-        if not request.cookies.get("device_token"):
-            response.set_cookie(
-                key="device_token", value=device_token, max_age=31536000, httponly=True
-            )
-        client_ip = request.client.host if request.client else "unknown"
-
-        cursor.execute(
-            "SELECT id FROM votes WHERE device_token = ? OR ip_address = ?",
-            (device_token, client_ip),
-        )
-        if cursor.fetchone():
-            raise HTTPException(
-                status_code=403,
-                detail="Hai già espresso il tuo voto da questo dispositivo o rete.",
-            )
+        device_token = uuid.uuid4().hex
+        client_ip = get_client_ip(request)
 
         cursor.execute(
             """
@@ -271,7 +288,10 @@ def submit_vote(vote: VoteRequest, request: Request, response: Response):
     finally:
         conn.close()
 
-    return {"message": "Voto inviato con successo! Grazie per aver partecipato."}
+    return {
+        "message": "Voto inviato con successo! Grazie per aver partecipato.",
+        "assigned_crowns": len(selected_ids),
+    }
 
 @app.get("/api/results")
 def get_results():

@@ -58,6 +58,10 @@ FastAPI:
 python3 -m unittest discover -s backend/tests
 ```
 
+Se il frontend e il backend sono pubblicati su origini diverse, imposta
+`CORS_ORIGINS` con gli URL consentiti separati da virgole (per esempio
+`https://voto.example.it`).
+
 ---
 
 ### 2. Avviare il Frontend React (Mobile-First)

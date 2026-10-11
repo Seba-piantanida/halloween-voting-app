@@ -1,0 +1,54 @@
+.add-costume-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(5, 3, 9, .78);
+  backdrop-filter: blur(5px);
+}
+
+.add-costume-modal {
+  position: relative;
+  width: min(100%, 430px);
+  max-height: min(90dvh, 720px);
+  overflow-y: auto;
+  padding: 28px 22px 22px;
+  border: 1px solid rgba(255, 117, 24, .35);
+  border-radius: 20px;
+  background: linear-gradient(160deg, #241832, #15101d 75%);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .65), 0 0 32px rgba(157, 78, 221, .16);
+}
+
+.close-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .07);
+  color: white;
+  cursor: pointer;
+}
+
+.add-costume-heading { display: flex; gap: 13px; align-items: center; margin: 0 40px 24px 0; }
+.add-costume-icon { display: grid; place-items: center; width: 44px; height: 44px; flex: 0 0 auto; border-radius: 13px; color: #ffb16b; background: rgba(255, 117, 24, .16); }
+.add-costume-heading h2 { color: var(--text-main); font-size: 1.35rem; }
+.add-costume-heading p { margin-top: 4px; color: var(--text-muted); font-size: .88rem; }
+.add-costume-label { display: block; margin: 0 0 8px; color: #eee5f5; font-size: .9rem; font-weight: 600; }
+.add-costume-modal .input-field { margin-bottom: 20px; }
+.photo-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.photo-choice { min-height: 86px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; padding: 12px; border: 1px dashed rgba(255, 173, 107, .55); border-radius: 13px; background: rgba(255, 255, 255, .035); color: #ffd0aa; font-size: .88rem; font-weight: 600; text-align: center; cursor: pointer; }
+.photo-choice:hover { background: rgba(255, 117, 24, .12); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.costume-photo-preview { position: relative; height: 220px; margin-bottom: 20px; overflow: hidden; border-radius: 13px; background: #09070d; }
+.costume-photo-preview img { width: 100%; height: 100%; object-fit: contain; }
+.costume-photo-preview button { position: absolute; right: 10px; bottom: 10px; padding: 9px 12px; border: 0; border-radius: 9px; background: rgba(12, 8, 17, .85); color: white; cursor: pointer; }
+.modal-error { margin: -8px 0 12px; color: #ff9d9d; font-size: .9rem; }
+.add-costume-modal .btn-submit:disabled { opacity: .65; cursor: wait; }
